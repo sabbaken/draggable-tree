@@ -5,8 +5,8 @@ const DraggableTree: React.FC = () => {
 
   return (
     <>
-      <Toolbar/>
-      <div className='w-full h-screen flex flex-col items-center justify-center'>
+      <Toolbar />
+      <div className="w-full h-screen flex flex-col items-center justify-center">
         draggable tree
       </div>
     </>
