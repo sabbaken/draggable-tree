@@ -51,7 +51,6 @@ const Tree: React.FC<TreeProps> = ({initialData}) => {
           (child) => child.id !== draggedNodeId,
         );
       } else {
-        // If dragged node is at the root level
         treeDataCopy = treeDataCopy.filter((node: TreeNodeData) => node.id !== draggedNodeId);
       }
 
