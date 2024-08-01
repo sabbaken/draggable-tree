@@ -36,7 +36,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, moveNode, onDelete }) => {
   drag(drop(dropRef));
 
   return (
-    <div className="cursor-grab" ref={dropRef} style={{ opacity: isDragging ? 0.5 : 1 }}>
+    <div className="cursor-grab bg-white" ref={dropRef} style={{ opacity: isDragging ? 0.5 : 1 }}>
       <div className='group hover:bg-gray-50 px-2 rounded w-full flex justify-between items-center h-10'>
         {node.name}
         <Button variant="link" size="sm" className="group-hover:opacity-100 focus-visible:opacity-100 opacity-0 " onClick={() => onDelete(node.id)}>
@@ -45,7 +45,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, moveNode, onDelete }) => {
       </div>
 
       {node.children && (
-        <div className='border-l border-gray-200 ml-1 pl-3'>
+        <div className='border-l border-gray-200 ml-3 pl-1'>
           {node.children.map((childNode) => (
             <TreeNode key={childNode.id} node={childNode} moveNode={moveNode} onDelete={onDelete} />
           ))}

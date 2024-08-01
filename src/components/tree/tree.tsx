@@ -4,7 +4,11 @@ import {HTML5Backend} from "react-dnd-html5-backend";
 import TreeNode from "./treeNode";
 import {Input} from "../input.tsx";
 import {Button} from "../button.tsx";
-import { saveAs } from 'file-saver';
+import {saveAs} from "file-saver";
+import {addNodeRecursive, findNodeAndParent, removeNodeRecursive} from "../../utils/treeNodes.ts";
+import {cloneDeep} from "lodash";
+import {generateRandomId} from "../../utils/randomNumericalId.ts";
+import Card from "../card.tsx";
 
 export interface TreeNodeData {
   id: number;
@@ -20,25 +24,8 @@ const Tree: React.FC<TreeProps> = ({initialData}) => {
   const [treeData, setTreeData] = useState<TreeNodeData[]>(initialData);
   const [newNodeName, setNewNodeName] = useState<string>("");
 
-  const findNodeAndParent = (
-    nodes: TreeNodeData[],
-    nodeId: number,
-    parent: TreeNodeData | null = null,
-  ): {node: TreeNodeData; parent: TreeNodeData | null} | null => {
-    for (const node of nodes) {
-      if (node.id === nodeId) {
-        return {node, parent};
-      }
-      if (node.children) {
-        const result = findNodeAndParent(node.children, nodeId, node);
-        if (result) return result;
-      }
-    }
-    return null;
-  };
-
   const moveNode = useCallback((draggedNodeId: number, targetNodeId: number) => {
-    let treeDataCopy = JSON.parse(JSON.stringify(treeData));
+    let treeDataCopy = cloneDeep(treeData);
     const draggedNodeInfo = findNodeAndParent(treeDataCopy, draggedNodeId);
     const targetNodeInfo = findNodeAndParent(treeDataCopy, targetNodeId);
 
@@ -62,37 +49,17 @@ const Tree: React.FC<TreeProps> = ({initialData}) => {
   }, [treeData]);
 
   const removeNode = useCallback((nodeId: number) => {
-    const removeNodeRecursive = (nodes: TreeNodeData[], nodeId: number): TreeNodeData[] => {
-      return nodes
-        .filter(node => node.id !== nodeId)
-        .map(node => ({
-          ...node,
-          children: node.children ? removeNodeRecursive(node.children, nodeId) : undefined,
-        }));
-    };
-
     setTreeData(prevData => removeNodeRecursive(prevData, nodeId));
   }, []);
 
   const addNode = useCallback((name: string, parentId: number | null = null) => {
-    const newId = Math.floor(Math.random() * 10000);
+    const newId = generateRandomId();
     const newNode: TreeNodeData = {id: newId, name};
 
     if (parentId === null) {
       setTreeData(prevData => [...prevData, newNode]);
     } else {
-      const addNodeRecursive = (nodes: TreeNodeData[], parentId: number): TreeNodeData[] => {
-        return nodes.map(node => {
-          if (node.id === parentId) {
-            node.children = node.children ? [...node.children, newNode] : [newNode];
-          } else if (node.children) {
-            node.children = addNodeRecursive(node.children, parentId);
-          }
-          return node;
-        });
-      };
-
-      setTreeData(prevData => addNodeRecursive(prevData, parentId));
+      setTreeData(prevData => addNodeRecursive(prevData, parentId, newNode));
     }
   }, []);
 
@@ -109,29 +76,31 @@ const Tree: React.FC<TreeProps> = ({initialData}) => {
   };
 
   const handleDownloadJson = () => {
-    const jsonBlob = new Blob([JSON.stringify(treeData, null, 2)], {type: 'application/json'});
-    saveAs(jsonBlob, 'treeData.json');
+    const jsonBlob = new Blob([JSON.stringify(treeData, null, 2)], {type: "application/json"});
+    saveAs(jsonBlob, "treeData.json");
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <form className="flex gap-4 mb-4" onSubmit={handleFormSubmit}>
-        <Input
-          type="text"
-          value={newNodeName}
-          onChange={handleInputChange}
-          placeholder="Enter node name"
-        />
-        <Button type="submit">Add new node</Button>
-        <Button type="button" onClick={handleDownloadJson}>Download Json</Button>
-      </form>
+    <Card className="w-full max-w-lg min-h-[500px] my-8 p-4 overflow-y-scroll">
+      <DndProvider backend={HTML5Backend}>
+        <form className="flex gap-4 mb-4" onSubmit={handleFormSubmit}>
+          <Input
+            type="text"
+            value={newNodeName}
+            onChange={handleInputChange}
+            placeholder="Enter node name"
+          />
+          <Button type="submit">Add new node</Button>
+          <Button type="button" onClick={handleDownloadJson}>Download Json</Button>
+        </form>
 
-      <div className=''>
-        {treeData.map((node) => (
-          <TreeNode key={node.id} node={node} moveNode={moveNode} onDelete={removeNode} />
-        ))}
-      </div>
-    </DndProvider>
+        <div>
+          {treeData.map((node) => (
+            <TreeNode key={node.id} node={node} moveNode={moveNode} onDelete={removeNode} />
+          ))}
+        </div>
+      </DndProvider>
+    </Card>
   );
 };
 
