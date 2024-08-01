@@ -81,7 +81,7 @@ const Tree: React.FC<TreeProps> = ({initialData}) => {
   };
 
   return (
-    <Card className="w-full max-w-lg min-h-[500px] my-8 p-4 overflow-y-scroll">
+    <Card className="w-full max-w-lg min-h-[600px] my-8 p-4 overflow-y-scroll">
       <DndProvider backend={HTML5Backend}>
         <form className="flex gap-4 mb-4" onSubmit={handleFormSubmit}>
           <Input
